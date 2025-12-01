@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Memory Game - Natale</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(#b91c1c, #7f1d1d);
+      color: #fff7ed;
+      display: flex;
+      justify-content: center;
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ❄️ Effetto neve */
+    @keyframes snow {
+      0% { transform: translateY(-10px); opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
+    }
+
+    .snowflake {
+      position: absolute;
+      top: -10px;
+      color: white;
+      font-size: 20px;
+      animation: snow linear infinite;
+      pointer-events: none;
+    }
+
+    h2 {
+      text-align: center;
+      color: #fff;
+      text-shadow: 0 0 10px #facc15;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      gap: 10px;
+    }
+
+    .card {
+      width: 100px;
+      height: 100px;
+      background: #14532d;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 40px;
+      user-select: none;
+      overflow: hidden;
+      border: 3px solid #facc15; /* bordo dorato */
+      box-shadow: 0 0 10px #facc15;
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hidden {
+      background: #14532d;
+    }
+
+    .matched {
+      visibility: hidden;
+    }
+
+    #tries {
+      margin-top: 20px;
+      font-size: 18px;
+      text-align: center;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ❄️ Generatore di fiocchi di neve -->
+<script>
+  function createSnowflake() {
+    const snow = document.createElement("div");
+    snow.classList.add("snowflake");
+    snow.textContent = "❄";
+    snow.style.left = Math.random() * 100 + "vw";
+    snow.style.animationDuration = 3 + Math.random() * 5 + "s";
+    snow.style.opacity = Math.random();
+    document.body.appendChild(snow);
+
+    setTimeout(() => snow.remove(), 8000);
+  }
+
+  setInterval(createSnowflake, 200);
+</script>
+
+<div>
+  <h2>🎅 Memory Game Natalizio 🎄</h2>
+  <div id="game" class="grid"></div>
+  <div id="tries">Tentativi: 0</div>
+</div>
+
+<script>
+  const images = [
+    "immagine1.jpeg",
+    "immagine2.jpeg",
+    "immagine3.jpeg",
+    "immagine4.jpeg",
+    "immagine5.jpeg",
+    "immagine6.jpeg"
+  ];
+
+  let cards = [...images, ...images];
+  let first = null;
+  let second = null;
+  let lock = false;
+  let tries = 0;
+
+  const game = document.getElementById("game");
+  const triesDisplay = document.getElementById("tries");
+
+  cards.sort(() => Math.random() - 0.5);
+
+  cards.forEach((src, index) => {
+    const card = document.createElement("div");
+    card.className = "card hidden";
+    card.dataset.index = index;
+    card.dataset.src = src;
+    card.addEventListener("click", reveal);
+    game.appendChild(card);
+  });
+
+  function reveal(e) {
+    if (lock) return;
+
+    const card = e.currentTarget;
+
+    if (!card.classList.contains("hidden")) return;
+
+    showCard(card);
+
+    if (!first) {
+      first = card;
+    } else if (!second) {
+      second = card;
+      lock = true;
+      tries++;
+      triesDisplay.textContent = "Tentativi: " + tries;
+
+      if (first.dataset.src === second.dataset.src) {
+        setTimeout(() => {
+          first.classList.add("matched");
+          second.classList.add("matched");
+          reset();
+        }, 300);
+      } else {
+        setTimeout(() => {
+          hideCard(first);
+          hideCard(second);
+          reset();
+        }, 800);
+      }
+    }
+  }
+
+  function showCard(card) {
+    card.classList.remove("hidden");
+    card.innerHTML = `<img src="${card.dataset.src}" alt="img">`;
+  }
+
+  function hideCard(card) {
+    card.classList.add("hidden");
+    card.innerHTML = "";
+  }
+
+  function reset() {
+    first = null;
+    second = null;
+    lock = false;
+  }
+</script>
+
+</body>
+</html>
